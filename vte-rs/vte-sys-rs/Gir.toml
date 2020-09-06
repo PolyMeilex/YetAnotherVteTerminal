@@ -1,0 +1,16 @@
+[options]
+library = "Vte"
+version = "2.91"
+target_path = "."
+work_mode = "sys"
+girs_dir = "../gir-files/"
+
+external_libraries = [
+    "Gtk",
+    "GLib",
+    "GObject",
+    "Gio",
+    "Atk",
+    "Gdk",
+    "Pango",
+]

@@ -1,0 +1,62 @@
+[options]
+girs_dir = "./gir-files"
+library = "Vte"
+version = "2.91"
+work_mode = "normal"
+external_libraries = [
+    "Gdk",
+    "Gio",
+    "GLib",
+    "Gtk",
+    "Pango",
+]
+target_path = "."
+generate_safety_asserts = true
+deprecate_by_min_version = true
+single_version_file = true
+
+generate = [
+    "Vte.CursorBlinkMode",
+    "Vte.CursorShape",
+    "Vte.EraseBinding",
+    "Vte.Format",
+    "Vte.Pty",
+    "Vte.PtyError",
+    "Vte.PtyFlags",
+    "Vte.Regex",
+    "Vte.SelectionFunc",
+    "Vte.TextBlinkMode",
+    "Vte.WriteFlags",
+]
+
+manual = [
+    "Gdk.Cursor",
+    "Gdk.CursorType",
+    "Gdk.Event",
+    "Gdk.RGBA",
+    "Gio.AsyncResult",
+    "Gio.Cancellable",
+    "Gio.OutputStream",
+    "GLib.Error",
+    "GLib.Pid",
+    "GLib.SpawnFlags",
+    "Gtk.Widget",
+    "Gtk.Window",
+    "Pango.FontDescription",
+]
+
+[[object]]
+name = "Vte.Terminal"
+status = "generate"
+    [[object.function]]
+    name = "set_colors"
+    ignore = true
+    [[object.function]]
+    name = "watch_child"
+    ignore = true
+    [[object.function]]
+    name = "feed_child"
+    ignore = true
+    [[object.function]]
+    name = "event_check_regex_simple"
+    ignore = true
