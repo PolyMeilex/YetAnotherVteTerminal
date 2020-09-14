@@ -1,6 +1,6 @@
 use gtk::prelude::*;
 
-use crate::state::State;
+use crate::{config::Config, state::State};
 use std::{cell::RefCell, rc::Rc};
 
 use vte::TerminalExt;
@@ -15,7 +15,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(app: &gtk::Application) -> Self {
+    pub fn new(app: &gtk::Application, config: Config) -> Self {
         let win = gtk::ApplicationWindowBuilder::new()
             .application(app)
             .build();
@@ -40,7 +40,6 @@ impl App {
             vte.match_set_cursor_name(tag, "pointer");
         }
 
-        // let fw = gdk::RGBA::white();
         let bg = gdk::RGBA {
             red: 0.0,
             green: 0.0,
@@ -48,23 +47,22 @@ impl App {
             alpha: 0.7,
         };
 
-        vte.set_color_background(&bg);
+        // vte.set_color_background(&bg);
 
-        // vte.set_colors(
-        //     // Some(&fw),
-        //     None,
-        //     Some(&bg),
-        //     &[
-        //         &gdk::RGBA::red(),
-        //         &gdk::RGBA::green(),
-        //         &gdk::RGBA::blue(),
-        //         &gdk::RGBA::red(),
-        //         &gdk::RGBA::green(),
-        //         &gdk::RGBA::blue(),
-        //         &gdk::RGBA::red(),
-        //         &gdk::RGBA::green(),
-        //     ],
-        // );
+        let palette: Vec<gdk::RGBA> = config
+            .colors
+            .into_iter()
+            .map(|c| gdk::RGBA {
+                red: (c.0 as f64 / 255.0),
+                green: (c.1 as f64 / 255.0),
+                blue: (c.2 as f64 / 255.0),
+                alpha: 1.0,
+            })
+            .collect();
+
+        let palette_ref: Vec<&gdk::RGBA> = palette.iter().collect();
+
+        vte.set_colors(None, Some(&bg), &palette_ref);
 
         let fd = pango::FontDescription::from_string("Monospace 9");
         vte.set_font(Some(&fd));
@@ -95,16 +93,54 @@ impl App {
     pub fn connect(&mut self) {
         let v = self.vte.clone();
         self.vte.connect_button_press_event(move |_, e| {
-            let mut e = e.clone();
-            let (res, _) = v.match_check_event(&mut e);
+            match e.get_button() {
+                1 => match e.get_state() {
+                    gdk::ModifierType::CONTROL_MASK => {
+                        let mut e = e.clone();
+                        let (res, _) = v.match_check_event(&mut e);
 
-            if let Some(res) = res {
-                println!("{}", res);
-                gtk::show_uri(None, &res.to_string(), 0).ok();
+                        if let Some(res) = res {
+                            gtk::show_uri(None, &res.to_string(), 0).ok();
+                        }
+                    }
+                    _ => {}
+                },
+                2 => {
+                    v.paste_clipboard();
+                }
+                3 => {}
+                _ => {}
             }
 
             Inhibit(false)
         });
+
+        let v = self.vte.clone();
+        self.vte
+            .connect_key_press_event(move |_, e| match e.get_keyval() {
+                gdk::keys::constants::C => {
+                    if e.get_state()
+                        == (gdk::ModifierType::CONTROL_MASK | gdk::ModifierType::SHIFT_MASK)
+                    {
+                        println!("copy");
+                        v.copy_clipboard_format(vte::Format::Text);
+                        Inhibit(true)
+                    } else {
+                        Inhibit(false)
+                    }
+                }
+                gdk::keys::constants::V => {
+                    if e.get_state()
+                        == (gdk::ModifierType::CONTROL_MASK | gdk::ModifierType::SHIFT_MASK)
+                    {
+                        v.paste_clipboard();
+                        Inhibit(true)
+                    } else {
+                        Inhibit(false)
+                    }
+                }
+                _ => Inhibit(false),
+            });
 
         let win = self.win.clone();
         self.vte.connect_child_exited(move |_, _| {

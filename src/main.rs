@@ -1,6 +1,7 @@
 use gio::prelude::*;
 
 mod app;
+mod config;
 mod state;
 
 fn main() {
@@ -12,7 +13,9 @@ fn main() {
     gtk::init().unwrap();
 
     app.connect_activate(|app| {
-        let mut app = app::App::new(app);
+        let config = config::get_config();
+
+        let mut app = app::App::new(app, config);
         app.connect();
     });
 
