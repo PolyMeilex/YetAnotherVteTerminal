@@ -40,13 +40,6 @@ impl App {
             vte.match_set_cursor_name(tag, "pointer");
         }
 
-        let bg = gdk::RGBA {
-            red: 0.0,
-            green: 0.0,
-            blue: 0.0,
-            alpha: 0.7,
-        };
-
         let mut palette: Vec<gdk::RGBA> = config
             .colors
             .into_iter()
@@ -60,6 +53,13 @@ impl App {
 
         let c = &palette.clone();
         palette.extend_from_slice(&c);
+
+        let bg = gdk::RGBA {
+            red: palette[0].red,
+            green: palette[0].green,
+            blue: palette[0].blue,
+            alpha: config.alpha,
+        };
 
         let palette_ref: Vec<&gdk::RGBA> = palette.iter().collect();
 

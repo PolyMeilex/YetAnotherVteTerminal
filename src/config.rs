@@ -4,21 +4,27 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     #[serde(default = "default_colors")]
     pub colors: Vec<(u8, u8, u8)>,
+    #[serde(default = "default_alpha")]
+    pub alpha: f64,
 }
 
 impl Config {}
 
 fn default_colors() -> Vec<(u8, u8, u8)> {
     vec![
-        (0, 3, 47),
-        (93, 108, 142),
-        (151, 121, 143),
-        (68, 163, 184),
-        (102, 213, 211),
-        (162, 160, 172),
-        (222, 161, 153),
-        (255, 255, 255),
+        (40, 44, 52),
+        (224, 108, 117),
+        (152, 195, 121),
+        (229, 192, 123),
+        (97, 175, 239),
+        (198, 120, 221),
+        (86, 182, 194),
+        (171, 178, 191),
     ]
+}
+
+fn default_alpha() -> f64 {
+    0.7
 }
 
 pub fn get_config() -> Config {
