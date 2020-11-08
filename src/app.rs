@@ -15,7 +15,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(app: &gtk::Application, config: Config) -> Self {
+    pub fn new(app: &gtk::Application, config: &Config) -> Self {
         let win = gtk::ApplicationWindowBuilder::new()
             .application(app)
             .build();
@@ -42,7 +42,7 @@ impl App {
 
         let mut palette: Vec<gdk::RGBA> = config
             .colors
-            .into_iter()
+            .iter()
             .map(|c| gdk::RGBA {
                 red: (c.0 as f64 / 255.0),
                 green: (c.1 as f64 / 255.0),

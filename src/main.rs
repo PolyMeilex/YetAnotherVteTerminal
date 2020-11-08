@@ -12,10 +12,9 @@ fn main() {
 
     gtk::init().unwrap();
 
-    app.connect_activate(|app| {
-        let config = config::get_config();
-
-        let mut app = app::App::new(app, config);
+    let config = config::get_config();
+    app.connect_activate(move |app| {
+        let mut app = app::App::new(app, &config.clone());
         app.connect();
     });
 
