@@ -22,5 +22,30 @@ fn default_colors() -> Vec<(u8, u8, u8)> {
 }
 
 pub fn get_config() -> Config {
-    ron::from_str(include_str!("./config.ron")).unwrap()
+    let config_dir = config_dir();
+
+    let default_config = include_str!("./config.ron");
+
+    if let Some(config_dir) = config_dir {
+        let term_config_dir = config_dir.join("YetAnotherVteTerminal");
+        let _ = std::fs::create_dir_all(&term_config_dir);
+
+        if let Ok(file) = std::fs::read_to_string(&term_config_dir.join("config.ron")) {
+            ron::from_str(&file).unwrap()
+        } else {
+            ron::from_str(default_config).unwrap()
+        }
+    } else {
+        ron::from_str(default_config).unwrap()
+    }
+}
+
+use std::path::PathBuf;
+fn config_dir() -> Option<PathBuf> {
+    let home = std::env::var_os("HOME").and_then(|h| if h.is_empty() { None } else { Some(h) });
+    if let Some(home) = home {
+        Some(PathBuf::from(home).join(".config"))
+    } else {
+        None
+    }
 }

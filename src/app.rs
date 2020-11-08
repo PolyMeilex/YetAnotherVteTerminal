@@ -47,8 +47,6 @@ impl App {
             alpha: 0.7,
         };
 
-        // vte.set_color_background(&bg);
-
         let palette: Vec<gdk::RGBA> = config
             .colors
             .into_iter()
