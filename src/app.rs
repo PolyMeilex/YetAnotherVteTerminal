@@ -47,7 +47,7 @@ impl App {
             alpha: 0.7,
         };
 
-        let palette: Vec<gdk::RGBA> = config
+        let mut palette: Vec<gdk::RGBA> = config
             .colors
             .into_iter()
             .map(|c| gdk::RGBA {
@@ -57,6 +57,9 @@ impl App {
                 alpha: 1.0,
             })
             .collect();
+
+        let c = &palette.clone();
+        palette.extend_from_slice(&c);
 
         let palette_ref: Vec<&gdk::RGBA> = palette.iter().collect();
 
