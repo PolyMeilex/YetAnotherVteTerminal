@@ -14,7 +14,7 @@ fn main() {
 
     let config = config::get_config();
     app.connect_activate(move |app| {
-        let mut app = app::App::new(app, &config.clone());
+        let mut app = app::App::new(app, &config);
         app.connect();
     });
 
