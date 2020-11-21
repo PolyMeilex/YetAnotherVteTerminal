@@ -1,7 +1,7 @@
 use gtk::prelude::*;
 
-use crate::{config::Config, state::State};
-use std::{cell::RefCell, rc::Rc};
+use crate::config::Config;
+// use std::{cell::RefCell, rc::Rc};
 
 use vte::TerminalExt;
 use vte::TerminalExtManual;
@@ -10,23 +10,40 @@ const LINK_EXPR: &str = "(((file|http|ftp|https)://)|(www|ftp)[-A-Za-z0-9]*\\.)[
 
 pub struct App {
     vte: vte::Terminal,
-    win: gtk::ApplicationWindow,
-    state: Rc<RefCell<State>>,
+    win: gtk::Window,
+    // state: Rc<RefCell<State>>,
 }
 
 impl App {
-    pub fn new(app: &gtk::Application, config: &Config) -> Self {
-        let win = gtk::ApplicationWindowBuilder::new()
-            .application(app)
-            .build();
+    pub fn new(config: &Config) -> Self {
+        let win = gtk::WindowBuilder::new().build();
         set_visual(&win, None);
 
         let vte = vte::Terminal::new();
 
-        let shell = if let Some(u) = pwd::Passwd::current_user() {
-            u.shell
+        let mut args = std::env::args();
+        let _first = args.next();
+
+        let flag_shell = if let Some(flag) = args.next().as_ref() {
+            println!("{:?}", flag);
+            if flag == "-e" {
+                let shell = args.next();
+                shell
+            } else {
+                None
+            }
         } else {
-            "/bin/sh".into()
+            None
+        };
+
+        let shell = if let Some(shell) = flag_shell {
+            shell
+        } else {
+            if let Some(u) = pwd::Passwd::current_user() {
+                u.shell
+            } else {
+                "/bin/sh".into()
+            }
         };
 
         {
@@ -87,7 +104,7 @@ impl App {
         Self {
             vte,
             win,
-            state: Rc::new(RefCell::new(State::new())),
+            // state: Rc::new(RefCell::new(State::new())),
         }
     }
 
@@ -147,10 +164,14 @@ impl App {
         self.vte.connect_child_exited(move |_, _| {
             win.close();
         });
+
+        self.win.connect_delete_event(move |_, _| {
+            std::process::exit(0);
+        });
     }
 }
 
-fn set_visual(window: &gtk::ApplicationWindow, _screen: Option<&gdk::Screen>) {
+fn set_visual(window: &gtk::Window, _screen: Option<&gdk::Screen>) {
     if let Some(screen) = window.get_screen() {
         if let Some(ref visual) = screen.get_rgba_visual() {
             window.set_visual(Some(visual));
