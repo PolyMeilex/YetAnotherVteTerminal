@@ -1,6 +1,6 @@
+use crate::Terminal;
 use glib::object::IsA;
-use glib::translate::{ToGlib, ToGlibPtr};
-use Terminal;
+use glib::translate::{IntoGlib, ToGlibPtr};
 
 pub trait TerminalExtManual: 'static {
     fn watch_child(&self, child_pid: glib::Pid);
@@ -15,7 +15,7 @@ pub trait TerminalExtManual: 'static {
 impl<O: IsA<Terminal>> TerminalExtManual for O {
     fn watch_child(&self, child_pid: glib::Pid) {
         unsafe {
-            vte_sys::vte_terminal_watch_child(self.as_ref().to_glib_none().0, child_pid.to_glib());
+            ffi::vte_terminal_watch_child(self.as_ref().to_glib_none().0, child_pid.into_glib());
         }
     }
 
@@ -34,7 +34,7 @@ impl<O: IsA<Terminal>> TerminalExtManual for O {
         }
 
         unsafe {
-            vte_sys::vte_terminal_set_colors(
+            ffi::vte_terminal_set_colors(
                 self.as_ref().to_glib_none().0,
                 foreground.to_glib_none().0,
                 background.to_glib_none().0,

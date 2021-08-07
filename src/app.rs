@@ -10,13 +10,15 @@ const LINK_EXPR: &str = "(((file|http|ftp|https)://)|(www|ftp)[-A-Za-z0-9]*\\.)[
 
 pub struct App {
     vte: vte::Terminal,
-    win: gtk::Window,
+    win: gtk::ApplicationWindow,
     // state: Rc<RefCell<State>>,
 }
 
 impl App {
-    pub fn new(config: &Config) -> Self {
-        let win = gtk::WindowBuilder::new().build();
+    pub fn new(app: &gtk::Application, config: &Config) -> Self {
+        let win = gtk::ApplicationWindowBuilder::new()
+            .application(app)
+            .build();
         set_visual(&win, None);
 
         let vte = vte::Terminal::new();
@@ -51,7 +53,7 @@ impl App {
             // const PCRE2_UTF: u32 = 524288;
             // const PCRE2_NO_UTF_CHECK: u32 = 1073741824;
 
-            let regex = vte::Regex::new_for_match(LINK_EXPR, PCRE2_MULTILINE).unwrap();
+            let regex = vte::Regex::for_match(LINK_EXPR, PCRE2_MULTILINE).unwrap();
             let tag = vte.match_add_regex(&regex, 0);
 
             vte.match_set_cursor_name(tag, "pointer");
@@ -111,8 +113,8 @@ impl App {
     pub fn connect(&mut self) {
         let v = self.vte.clone();
         self.vte.connect_button_press_event(move |_, e| {
-            match e.get_button() {
-                1 => match e.get_state() {
+            match e.button() {
+                1 => match e.state() {
                     gdk::ModifierType::CONTROL_MASK => {
                         let mut e = e.clone();
                         let (res, _) = v.match_check_event(&mut e);
@@ -135,9 +137,9 @@ impl App {
 
         let v = self.vte.clone();
         self.vte
-            .connect_key_press_event(move |_, e| match e.get_keyval() {
+            .connect_key_press_event(move |_, e| match e.keyval() {
                 gdk::keys::constants::C => {
-                    if e.get_state()
+                    if e.state()
                         == (gdk::ModifierType::CONTROL_MASK | gdk::ModifierType::SHIFT_MASK)
                     {
                         println!("copy");
@@ -148,7 +150,7 @@ impl App {
                     }
                 }
                 gdk::keys::constants::V => {
-                    if e.get_state()
+                    if e.state()
                         == (gdk::ModifierType::CONTROL_MASK | gdk::ModifierType::SHIFT_MASK)
                     {
                         v.paste_clipboard();
@@ -164,16 +166,12 @@ impl App {
         self.vte.connect_child_exited(move |_, _| {
             win.close();
         });
-
-        self.win.connect_delete_event(move |_, _| {
-            std::process::exit(0);
-        });
     }
 }
 
-fn set_visual(window: &gtk::Window, _screen: Option<&gdk::Screen>) {
-    if let Some(screen) = window.get_screen() {
-        if let Some(ref visual) = screen.get_rgba_visual() {
+fn set_visual(window: &gtk::ApplicationWindow, _screen: Option<&gdk::Screen>) {
+    if let Some(screen) = window.screen() {
+        if let Some(ref visual) = screen.rgba_visual() {
             window.set_visual(Some(visual));
         }
     }
